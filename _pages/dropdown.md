@@ -1,13 +1,10 @@
 ---
 layout: page
 title: unfinished
-nav: true
+nav: false
 nav_order: 6
 dropdown: true
 children:
-    - title: cv
-      permalink: /cv/
-    - title: divider
     - title: projects
       permalink: /projects/
     - title: divider
