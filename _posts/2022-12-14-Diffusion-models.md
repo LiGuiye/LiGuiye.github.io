@@ -41,13 +41,37 @@ Blog:
    1. [Introduction to Diffusion Models for Machine Learning](https://www.assemblyai.com/blog/diffusion-models-for-machine-learning-introduction/)
    2. [What are Diffusion Models?](https://lilianweng.github.io/posts/2021-07-11-diffusion-models/)
 
-## Markov chain
+## Background information
+
+### Markov chain
 
 Quote from [Wikipedia](https://en.wikipedia.org/wiki/Markov_chain#:~:text=A%20Markov%20chain%20or%20Markov,the%20state%20of%20affairs%20now.%22):
 
 
 A **Markov chain** or **Markov process** is a stochastic model describing a sequence of possible events in which the probability of each event depends only on the state attained in the previous event. Informally, this may be thought of as, "What happens next depends only on the state of affairs now".
 
+### Reparameterization trick
+
+The role of reparameterization trick (from VAE) is to make a stochastic sampling process trainable. Assuming a sampling process from $$\mathbf{z} \sim q_ \phi(\mathbf{z}\vert\mathbf{x}$$. To express the random variable $$\mathbf{z}$$ as a deterministic variable $$\mathbf{z} = \mathcal{T}_ \phi (\mathbf{x}, \mathbf{\epsilon} )$$, where $$\mathbf{\epsilon}$$ is an suxiliary independent random variable, and the transformation function $$\mathcal{T}_ \phi$$ parameterized by $$\phi$$ converts $$\mathbf{\epsilon}$$ to $$\mathbf{z}$$.
+
+For example, a common choice of the form of $$q_ \phi (z \vert x)$$ is a multivariate Gaussian distribution with a diagonal covariance structure:
+
+\begin{equation}
+\mathbf{z} \sim q_\phi(\mathbf{z}\vert\mathbf{x}^{(i)}) = \mathcal{N}(\mathbf{z}; \boldsymbol{\mu}^{(i)}, \boldsymbol{\sigma}^{2(i)}\boldsymbol{I})
+\end{equation}
+
+Applying the reparameterization trick:
+
+\begin{equation}
+\mathbf{z} = \boldsymbol{\mu} + \boldsymbol{\sigma} \odot \boldsymbol{\epsilon} \quad \text{where} \quad \boldsymbol{\epsilon} \sim \mathcal{N}(0, \boldsymbol{I})
+\end{equation}
+
+Tips:
+
+1. $$\odot$$ refers to element-wise product.
+2. $$ q_ \phi (\mathbf{z} \vert \mathbf{x}) $$ stands for a estimated posterior probability function, aso known as **probabilistic encoder**.
+3. $$p_{\theta}(\mathbf{x}\vert\mathbf{z})$$ is the likelihood of generating true data sample given the latent code, also known as **probabilistic decoder**.
+4. If we merge two Gaussian distributions with different variance, $$\mathcal{N}(\mathbf{0}, \sigma^2_ 1 \mathbf{I})$$ and $$\mathcal{N}(\mathbf{0}, \sigma^2_ 2 \mathbf{I})$$, the new distribution is $$\mathcal{N}(\mathbf{0}, (\sigma^2_ 1 + \sigma^2_ 2) \mathbf{I})$$.
 
 ## Main idea of Diffusion Model
 
@@ -55,7 +79,7 @@ Diffusion models works by **destroying training data** through the successive ad
 
 ### *Forward process* (or *diffusion process*)
 
-Specifically, a Diffusion Model is a latent variable model which maps to the latent space using a fixed Markov chain. This chain gradually adds noise to the data in order to obtain the **approximate posterior** $$q(X_{1:T}\vert X_0)$$, where $$X_1,\ldots,X_T$$ are the latent variables with the same dimensionality as $$X_0$$. See figure below.
+Specifically, a Diffusion Model is a latent variable model which maps to the latent space using a fixed Markov chain. This chain gradually adds noise to the data in order to obtain the **approximate posterior** $$q(\mathbf{x}_{1:T}\vert \mathbf{x}_0)$$, where $$\mathbf{x}_1,\ldots,\mathbf{x}_T$$ are the latent variables (a sequence of noisy samples) with the same dimensionality as $$\mathbf{x}_0$$. See figure below.
 
 <img src="https://www.assemblyai.com/blog/content/images/size/w1000/2022/05/image.png" alt="The Markov chain manifested for image data." width="600pt"/>
 
@@ -63,12 +87,12 @@ A parameterization of the forward process (combing Markov assumption):
 
 \begin{equation}
 \label{eq:forward-process}
-q(X_{1:T} \vert X_0) := \prod^T_{t=1} q(X_t \vert X_{t-1}) := \prod^T_{t=1} \mathcal{N}(X_t;\sqrt{1-\beta_t}X_{t-1},\beta_t\mathbf{I})
+q(\mathbf{x}_ t \vert \mathbf{x}_ {t-1}) = \mathcal{N}(\mathbf{x}_ t; \sqrt{1 - \beta_ t} \mathbf{x}_ {t-1}, \beta_ t\mathbf{I}) \quad q(\mathbf{x}_ {1:T} \vert \mathbf{x}_ 0) = \prod^T_{t=1} q(\mathbf{x}_ t \vert \mathbf{x}_ {t-1})
 \end{equation}
 
-where $$\beta_1,\dots,\beta_T$$ is a variance schedule (either learned or fixed) which, if well-behaved, **ensures that $$X_T$$ is nearly an isotropic Gaussian for sufficiently large $$T$$**.
+where $$\{\beta_t \in (0, 1)\}_{t=1}^T$$ is a variance schedule (either learned or fixed) controlling the step sizes which, if well-behaved, **ensures that $$\mathbf{x}_T$$ is nearly an isotropic Gaussian for sufficiently large $$T$$**. In other words, the data sample $$\mathbf{x}_0$$ gradually loss its distinguishable features as the step $$t$$ becomes larger. Eventually, when $$T \to \infty$$, $$\textbf{x}_T$$ is equivalent to an isotropic Gaussian distribution.
 
-*Let's skip the proof for now.*
+*Let's skip the proof and reparameterization trick for now.*
 
 ### *Reverse process* (or *reverse diffusion process*)
 
@@ -79,7 +103,8 @@ Ultimately, the image is asymptotically transformed to pure Gaussian noise. The 
 Starting with the pure Gaussian noise $$p(X_T)=\mathcal{N}(X_T;\mathbf{0},\mathbf{I})$$, the model learns the joint distribution $$p_\theta(X_0;T)$$ as:
 
 \begin{equation}
-p_\theta(X_0;T) := p(X_T) \prod^T_{t=1} p_\theta(X_{t-1}\vert X_t) := p(X_T) \prod^T_{t=1} \mathcal{N}(X_{t-1};\mu_\theta(x_t,t),\varSigma_\theta(X_t,t))
+p_ \theta ( \mathbf{x}_ {t-1} \vert \mathbf{x}_ t) = \mathcal{N} ( \mathbf{x}_ {t-1}; \boldsymbol{\mu}_ \theta ( \mathbf{x}_ t, t ) , \boldsymbol{\Sigma}_ \theta ( \mathbf{x}_ t, t ) ) \quad
+p_ \theta ( \mathbf{x}_ {0:T} ) = p ( \mathbf{x}_ T ) \prod^T_ {t=1} p_ \theta ( \mathbf{x}_ {t-1} \vert \mathbf{x}_ t )
 \end{equation}
 
 where the time-dependent parameters of the Gaussian transitions are learned.
@@ -98,7 +123,7 @@ A Diffusion Model is trained by **finding the reverse Markov transitions that ma
 \mathbb{E} [= \log p_\theta (X_0)] \leqslant \mathbb{E}_ {q} [-\log \frac{p_\theta (X_{0:T})}{q(X_{1:T} \vert X_0)}] =: L_{vlb}
 \end{equation}
 
-Variational lower bound $$L_{vlb}$$ is technically an upper bound (the negative of the ELBO) which we are trying to minimize. We will try to rewrite the $$L_{vlb}$$ in terms of Kullback-Leibler (KL) Divergences because the transition distributions in the Markov chain are Gaussians, and **the KL divergence between Gaussians has a closed form**.
+Variational lower bound $$L_{vlb}$$ is technically an upper bound (the negative of the Evidence Lower Bound (ELBO)) which we are trying to minimize. We will try to rewrite the $$L_{vlb}$$ in terms of Kullback-Leibler (KL) Divergences because the transition distributions in the Markov chain are Gaussians, and **the KL divergence between Gaussians has a closed form**.
 
 \begin{equation}
 D_{KL}(P\parallel Q) = \int_{-\infty}^{\infty} p(x)\log(\frac{p(x)}{q(x)}) dx
