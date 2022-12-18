@@ -52,7 +52,7 @@ A **Markov chain** or **Markov process** is a stochastic model describing a sequ
 
 ### Reparameterization trick
 
-The role of reparameterization trick (from VAE) is to make a stochastic sampling process trainable. Assuming a sampling process from $$\mathbf{z} \sim q_ \phi(\mathbf{z}\vert\mathbf{x}$$. To express the random variable $$\mathbf{z}$$ as a deterministic variable $$\mathbf{z} = \mathcal{T}_ \phi (\mathbf{x}, \mathbf{\epsilon} )$$, where $$\mathbf{\epsilon}$$ is an suxiliary independent random variable, and the transformation function $$\mathcal{T}_ \phi$$ parameterized by $$\phi$$ converts $$\mathbf{\epsilon}$$ to $$\mathbf{z}$$.
+The role of reparameterization trick (from VAE) is to make a stochastic sampling process trainable. Assuming a sampling process from $$\mathbf{z} \sim q_ \phi(\mathbf{z}\vert\mathbf{x})$$. To express the random variable $$\mathbf{z}$$ as a deterministic variable $$\mathbf{z} = \mathcal{T}_ \phi (\mathbf{x}, \mathbf{\epsilon} )$$, where $$\mathbf{\epsilon}$$ is an suxiliary independent random variable, and the transformation function $$\mathcal{T}_ \phi$$ parameterized by $$\phi$$ converts $$\mathbf{\epsilon}$$ to $$\mathbf{z}$$.
 
 For example, a common choice of the form of $$q_ \phi (z \vert x)$$ is a multivariate Gaussian distribution with a diagonal covariance structure:
 
@@ -71,7 +71,6 @@ Tips:
 1. $$\odot$$ refers to element-wise product.
 2. $$ q_ \phi (\mathbf{z} \vert \mathbf{x}) $$ stands for a estimated posterior probability function, aso known as **probabilistic encoder**.
 3. $$p_{\theta}(\mathbf{x}\vert\mathbf{z})$$ is the likelihood of generating true data sample given the latent code, also known as **probabilistic decoder**.
-4. If we merge two Gaussian distributions with different variance, $$\mathcal{N}(\mathbf{0}, \sigma^2_ 1 \mathbf{I})$$ and $$\mathcal{N}(\mathbf{0}, \sigma^2_ 2 \mathbf{I})$$, the new distribution is $$\mathcal{N}(\mathbf{0}, (\sigma^2_ 1 + \sigma^2_ 2) \mathbf{I})$$.
 
 ## Main idea of Diffusion Model
 
@@ -92,7 +91,23 @@ q(\mathbf{x}_ t \vert \mathbf{x}_ {t-1}) = \mathcal{N}(\mathbf{x}_ t; \sqrt{1 - 
 
 where $$\{\beta_t \in (0, 1)\}_{t=1}^T$$ is a variance schedule (either learned or fixed) controlling the step sizes which, if well-behaved, **ensures that $$\mathbf{x}_T$$ is nearly an isotropic Gaussian for sufficiently large $$T$$**. In other words, the data sample $$\mathbf{x}_0$$ gradually loss its distinguishable features as the step $$t$$ becomes larger. Eventually, when $$T \to \infty$$, $$\textbf{x}_T$$ is equivalent to an isotropic Gaussian distribution.
 
-*Let's skip the proof and reparameterization trick for now.*
+We can sample $$\mathbf{x}_t$$ at any arbitrary time step $$t$$ in a closed form using [reparameterization trick](#reparameterization-trick).
+
+Let $$\alpha_t = 1 - \beta_ t$$ and $$\bar{\alpha}_t = \prod_{i=1}^t \alpha_i$$
+
+$$
+\begin{align}
+
+\mathbf{x}_ t 
+&= \sqrt{1 - \beta_ t} \mathbf{x}_ {t-1} + \sqrt{\beta_ t} \epsilon_ {t-1} \quad \text{, where } {\epsilon_ t \sim \mathcal{N}(\mathbf{0},\mathbf{I})}_ {t=0}^{t-1} \\
+&= \sqrt{\alpha_t} \mathbf{x}_ {t-1} + \sqrt{1-\alpha_ t} \epsilon_ {t-1} \\
+&= \sqrt{\alpha_t \alpha_{t-1}} \mathbf{x}_{t-2} + \sqrt{1 - \alpha_t \alpha_{t-1}} \bar{\boldsymbol{\epsilon}}_{t-2} \quad \text{, where } \bar{\boldsymbol{\epsilon}}_{t-2} \text{ merges two Gaussian distributions.}
+\end{align}
+$$
+
+Tips:
+
+1. If we merge two Gaussian distributions with different variance, $$\mathcal{N}(\mathbf{0}, \sigma^2_ 1 \mathbf{I})$$ and $$\mathcal{N}(\mathbf{0}, \sigma^2_ 2 \mathbf{I})$$, the new distribution is $$\mathcal{N}(\mathbf{0}, (\sigma^2_ 1 + \sigma^2_ 2) \mathbf{I})$$.
 
 ### *Reverse process* (or *reverse diffusion process*)
 
