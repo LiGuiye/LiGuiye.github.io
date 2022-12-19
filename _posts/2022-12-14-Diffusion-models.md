@@ -93,16 +93,33 @@ where $$\{\beta_t \in (0, 1)\}_{t=1}^T$$ is a variance schedule (either learned 
 
 We can sample $$\mathbf{x}_t$$ at any arbitrary time step $$t$$ in a closed form using [reparameterization trick](#reparameterization-trick).
 
-Let $$\alpha_t = 1 - \beta_ t$$ and $$\bar{\alpha}_t = \prod_{i=1}^t \alpha_i$$
+Given
 
 $$
-\begin{align}
+\begin{aligned}
+q(\mathbf{x}_ t \vert \mathbf{x}_ {t-1}) = \mathcal{N}(\mathbf{x}_ t; \sqrt{1 - \beta_ t} \mathbf{x}_ {t-1}, \beta_ t\mathbf{I})
+\end{aligned}
+$$
 
-\mathbf{x}_ t 
+Let $$\alpha_t = 1 - \beta_ t \text{ and } \bar{\alpha}_t = \prod_{i=1}^t \alpha_i$$ :
+
+$$
+\begin{aligned}
+\mathbf{x}_ t
 &= \sqrt{1 - \beta_ t} \mathbf{x}_ {t-1} + \sqrt{\beta_ t} \epsilon_ {t-1} \quad \text{, where } {\epsilon_ t \sim \mathcal{N}(\mathbf{0},\mathbf{I})}_ {t=0}^{t-1} \\
 &= \sqrt{\alpha_t} \mathbf{x}_ {t-1} + \sqrt{1-\alpha_ t} \epsilon_ {t-1} \\
-&= \sqrt{\alpha_t \alpha_{t-1}} \mathbf{x}_{t-2} + \sqrt{1 - \alpha_t \alpha_{t-1}} \bar{\boldsymbol{\epsilon}}_{t-2} \quad \text{, where } \bar{\boldsymbol{\epsilon}}_{t-2} \text{ merges two Gaussian distributions.}
-\end{align}
+&= \sqrt{\alpha_t \alpha_{t-1}} \mathbf{x}_{t-2} + \sqrt{1 - \alpha_t \alpha_{t-1}} \bar{\boldsymbol{\epsilon}}_{t-2} \quad \text{, where } \bar{\boldsymbol{\epsilon}}_{t-2} \text{ merges two Gaussian distributions.} \\
+&= \dots \\
+&= \sqrt{\bar{\alpha_t}} \mathbf{x}_0 + \sqrt{1-\bar{\alpha_t}} \epsilon
+\end{aligned}
+$$
+
+Hence
+
+$$
+\begin{aligned}
+q(\mathbf{x}_ t \vert \mathbf{x}_0) = \mathcal{N}(\mathbf{x}_ t; \sqrt{\bar{\alpha_t}} \mathbf{x}_0, (\sqrt{1-\bar{\alpha_t}})\mathbf{I})
+\end{aligned}
 $$
 
 Tips:
@@ -135,7 +152,7 @@ where the time-dependent parameters of the Gaussian transitions are learned.
 A Diffusion Model is trained by **finding the reverse Markov transitions that maximize the likelihood of the training data**. In practice, training equivalently consists of minimizing the variational upper bound on the negative log likelihood.
 
 \begin{equation}
-\mathbb{E} [= \log p_\theta (X_0)] \leqslant \mathbb{E}_ {q} [-\log \frac{p_\theta (X_{0:T})}{q(X_{1:T} \vert X_0)}] =: L_{vlb}
+\mathbb{E} [- \log p_\theta (\mathbf{x}_ 0)] \leqslant \mathbb{E}_ {q} [-\log \frac{p_ \theta (\mathbf{x}_ {0:T})}{q(\mathbf{x}_ {1:T} \vert \mathbf{x}_ 0)}] =: L_{vlb}
 \end{equation}
 
 Variational lower bound $$L_{vlb}$$ is technically an upper bound (the negative of the Evidence Lower Bound (ELBO)) which we are trying to minimize. We will try to rewrite the $$L_{vlb}$$ in terms of Kullback-Leibler (KL) Divergences because the transition distributions in the Markov chain are Gaussians, and **the KL divergence between Gaussians has a closed form**.
@@ -147,26 +164,20 @@ D_{KL}(P\parallel Q) = \int_{-\infty}^{\infty} p(x)\log(\frac{p(x)}{q(x)}) dx
 Casting $$L_{vlb}$$ in terms of KL Divergences
 
 \begin{equation}
-L_{vlb} := L_0 + L_1 + \ldots + L_{T-1} + L_T
+L_{vlb} = L_0 + L_1 + \ldots + L_{T-1} + L_T
 \end{equation}
 
 where
 
-\begin{equation}
-L_0 := -\log p_\theta(X_0 \vert X_1)
-\end{equation}
+$$
+\begin{aligned}
+L_0 &= -\log p_\theta(\mathbf{x}_0 \vert \mathbf{x}_1) \\
+L_t &= D_{KL}(q(\mathbf{x}_t \vert \mathbf{x}_ {t+1} , \mathbf{x}_0) \parallel p_\theta(\mathbf{x}_ t \vert \mathbf{x}_ {t+1})) \quad \text{ for } 1 \leq t \leq T-1\\
+L_T &= D_{KL}(q(\mathbf{x}_T \vert \mathbf{x}_0) \parallel p_\theta (\mathbf{x}_T))
+\end{aligned}
+$$
 
-\begin{equation}
-L_{t-1} := D_{KL}(q(X_{t-1} \vert X_t,X_0)\parallel p_\theta(X_{t-1} \vert X_t))
-\end{equation}
-
-\begin{equation}
-L_T := D_{KL}(q(X_T \vert X_0)\parallel p(X_T))
-\end{equation}
-
-*Let's skip the proof for now.*
-
-Conditioning the forward process posterior on $$X_0$$ in $$L_{t-1}$$ results in a tractable form that leads to **all KL divergences being comparisons between Gaussians**. This means that the divergences can be exactly calculated with closed-form expressions rather than with Monte Carlo estimates.
+Conditioning the forward process posterior on $$\mathbf{x}_0$$ in $$L_{t-1}$$ results in a tractable form that leads to **all KL divergences being comparisons between Gaussians**. This means that the divergences can be exactly calculated with closed-form expressions rather than with Monte Carlo estimates.
 
 ## Summary
 
