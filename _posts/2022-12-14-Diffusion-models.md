@@ -74,13 +74,16 @@ Tips:
 
 ## Main idea of Diffusion Model
 
-Diffusion models works by **destroying training data** through the successive addition if Gaussian noise, and then **learning to recover** the data by reversing this noising process. After training, we can use the Diffusion Model to generate data by simply **passing randomly sampled noise through the learned denoising process**.
+Diffusion models works by **destroying training data** through the successive addition if Gaussian noise, and then **learning to recover** the data by reversing this noising process. It draws inspiration from physics, in particular **thermodynamics**/statistical physics. After training, we can use the Diffusion Model to generate data by simply **passing randomly sampled noise through the learned denoising process**.
 
 ### *Forward process* (or *diffusion process*)
 
 Specifically, a Diffusion Model is a latent variable model which maps to the latent space using a fixed Markov chain. This chain gradually adds noise to the data in order to obtain the **approximate posterior** $$q(\mathbf{x}_{1:T}\vert \mathbf{x}_0)$$, where $$\mathbf{x}_1,\ldots,\mathbf{x}_T$$ are the latent variables (a sequence of noisy samples) with the same dimensionality as $$\mathbf{x}_0$$. See figure below.
 
+<figure>
 <img src="https://www.assemblyai.com/blog/content/images/size/w1000/2022/05/image.png" alt="The Markov chain manifested for image data." width="600pt"/>
+<figcaption>Forward process.</figcaption>
+</figure>
 
 A parameterization of the forward process (combing Markov assumption):
 
@@ -130,7 +133,10 @@ Tips:
 
 Ultimately, the image is asymptotically transformed to pure Gaussian noise. The goal of training a diffusion model is to **learn the reverse process**, i.e. training $$p_\theta (X_{t-1} \vert X_t)$$. See figure below, by traversing backwards along this chain, we can generate new data.
 
+<figure>
 <img src="https://www.assemblyai.com/blog/content/images/size/w1000/2022/05/image-1.png" alt="The reverse process of the Markov chain." width="600pt"/>
+<figcaption>Reverse process.</figcaption>
+</figure>
 
 Starting with the pure Gaussian noise $$p(X_T)=\mathcal{N}(X_T;\mathbf{0},\mathbf{I})$$, the model learns the joint distribution $$p_\theta(X_0;T)$$ as:
 
@@ -149,13 +155,13 @@ where the time-dependent parameters of the Gaussian transitions are learned.
 
 ## Training
 
-A Diffusion Model is trained by **finding the reverse Markov transitions that maximize the likelihood of the training data**. In practice, training equivalently consists of minimizing the variational upper bound on the negative log likelihood.
+A Diffusion Model is trained by **finding the reverse Markov transitions that maximize the likelihood of the training data**. The combination of $$p$$ and $$q$$ is a variational auto-encoder. In practice, training equivalently consists of minimizing the variational upper bound on the negative log likelihood.
 
 \begin{equation}
 \mathbb{E} [- \log p_\theta (\mathbf{x}_ 0)] \leqslant \mathbb{E}_ {q} [-\log \frac{p_ \theta (\mathbf{x}_ {0:T})}{q(\mathbf{x}_ {1:T} \vert \mathbf{x}_ 0)}] =: L_{vlb}
 \end{equation}
 
-Variational lower bound $$L_{vlb}$$ is technically an upper bound (the negative of the Evidence Lower Bound (ELBO)) which we are trying to minimize. We will try to rewrite the $$L_{vlb}$$ in terms of Kullback-Leibler (KL) Divergences because the transition distributions in the Markov chain are Gaussians, and **the KL divergence between Gaussians has a closed form**.
+Variational lower bound ($$L_{vlb}$$) is technically an upper bound (the negative of the Evidence Lower Bound (ELBO)) which we are trying to minimize. We will try to rewrite the $$L_{vlb}$$ in terms of Kullback-Leibler (KL) Divergences because the transition distributions in the Markov chain are Gaussians, and **the KL divergence between Gaussians has a closed form**.
 
 \begin{equation}
 D_{KL}(P\parallel Q) = \int_{-\infty}^{\infty} p(x)\log(\frac{p(x)}{q(x)}) dx
