@@ -303,6 +303,12 @@ Properties of Gamma function:
 - If $$n\geq 1$$ is an integer, $$\Gamma(n) = (n-1)!$$
 - (Since $$0!=1$$), $$\Gamma(1)=1$$
 
+## Inverse-gamma distribution
+
+$$
+{\displaystyle f(x;\alpha ,\beta )={\frac {\beta ^{\alpha }}{\Gamma (\alpha )}}(1/x)^{\alpha +1}\exp \left(-\beta /x\right)} \text{ , for } x > 0
+$$
+
 ## Beta distribution
 
 Notation: $$B(\alpha, \beta)$$
