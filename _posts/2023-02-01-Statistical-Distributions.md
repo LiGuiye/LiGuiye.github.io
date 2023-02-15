@@ -24,11 +24,19 @@ Mainly collected from Wikipedia and class notes of the class STAT 5100 in CU Bou
 
     $$
     F_X (x) = P(X \leq x)
-        $$
+    $$
+
+    CDF can be find by integrating PDF.
 
 2. Probability density function (**PDF**)
 
     A function that defines the relationship between continuous random variables and their probabilities. If the random variables are discrete, we call it **Probability mass function (PMF)**.
+
+    $$
+    P(X \in [a,b]) = \int_a^b f_X(x)dx
+    $$
+
+    PDF can be find by differentiating CDF.
 
 3. Law of total probability
 
@@ -56,7 +64,9 @@ Mainly collected from Wikipedia and class notes of the class STAT 5100 in CU Bou
 
 5. Conjugate prior
 
-    In Bayesian probability, if the posterior distribution $$ p ( \theta \mid x ) $$ is in the same probability distribution family as the prior probability distribution $$ p(\theta ) $$, the **prior** and **posterior** are then called **conjugate distributions**, and the prior is called a **conjugate prior** for the likelihood function $$ p(x\mid \theta ) $$.
+    In Bayesian probability, if the ***posterior*** distribution $$ p ( \theta \mid x ) $$ is in the same probability distribution family as the ***prior*** probability distribution $$ p(\theta ) $$, the ***prior*** and **posterior** are then called **conjugate distributions**, and the prior is called a **conjugate prior** for the ***likelihood*** function $$ p(x\mid \theta ) $$.
+
+    [Common conjugate distributions](https://en.wikipedia.org/wiki/Conjugate_prior#Table_of_conjugate_distributions)
 
 6. Manually calculate a p-value
 
@@ -200,28 +210,17 @@ $$r > 0$$ — number of successes until the experiment is stopped (integer, but 
 
 $$p \in [0,1]$$ — success probability in each experiment (real)
 
-## Poisson distribution
-
-Notation $$Poisson(\lambda)$$
-
-A random variable $$X$$ has a Poisson distribution with parameter $$\lambda > 0$$ if $$X$$ has PDF
+PMF:
 
 $$
-\begin{aligned}
-P (X = x)
-&= {\begin{cases}
-\frac{e^{−\lambda}\lambda^x}{x!} &, \quad x = 0, 1, 2, \ldots\\
-0  &, \quad \text{otherwise}
-\end{cases}} \\
-&= \frac{e^{−\lambda}\lambda^x}{x!} I_{\{0,1,2,\dots\}}(x)
-\end{aligned}
+{\displaystyle f(x;r,p)\equiv \Pr(X=x)={\binom {x+r-1}{x}}(1-p)^{x}p^{r}}
 $$
 
 ## Geometric distribution
 
 Notation: $$geom(p)$$
 
-Consider a sequence of independent trials of an experiment where each trial can result in either “Success” ($$S$$) or “Failure” ($$F$$). Let $$0 \leq p \leq 1$$ be the probability of *success* on any one trial.
+Consider a sequence of independent trials of an experiment where each trial can result in either “Success” ($$S$$) or “Failure” ($$F$$). Let $$0 \leq p \leq 1$$ be the probability of *success* on any one trial. It's a special case of negative binomial distribution.
 
 Definition 1 ("number of trials" model):
 
@@ -241,6 +240,23 @@ PMF:
 
 $$
 P (X = x) = (1 − p)^{x} p \text{ for } x \text{ in } \{0, 1, 2, \ldots \},
+$$
+
+## Poisson distribution
+
+Notation $$Poisson(\lambda)$$
+
+A random variable $$X$$ has a Poisson distribution with parameter $$\lambda > 0$$ if $$X$$ has PDF
+
+$$
+\begin{aligned}
+P (X = x)
+&= {\begin{cases}
+\frac{e^{−\lambda}\lambda^x}{x!} &, \quad x = 0, 1, 2, \ldots\\
+0  &, \quad \text{otherwise}
+\end{cases}} \\
+&= \frac{e^{−\lambda}\lambda^x}{x!} I_{\{0,1,2,\dots\}}(x)
+\end{aligned}
 $$
 
 ## Exponential distribution
@@ -279,24 +295,26 @@ Notation:
 - Gamma distribution $$\Gamma(\alpha, \beta)$$
 - Gamma function $$\Gamma(\alpha)$$
 
+Gamma distribution:
+
 Let $$\alpha > 0$$ and $$ \beta > 0$$ be fixed parameters and consider the continuous random variable with PDF
 
 $$
 \begin{aligned}
 f(x)
 &= {\begin{cases}
-\frac{1}{\Gamma(\alpha)}\beta^{\alpha}x^{\alpha-1}e^{-\beta x} &, \quad x > 0\\
+\frac{\beta^{\alpha}}{\Gamma(\alpha)}x^{\alpha-1}e^{-\beta x} &, \quad x > 0\\
 0  &, \quad \text{otherwise}
 \end{cases}} \\
-&= \frac{1}{\Gamma(\alpha)}\beta^{\alpha}x^{\alpha-1}e^{-\beta x} I_{(0,\infty)}(x)
+&= \frac{\beta^{\alpha}}{\Gamma(\alpha)}x^{\alpha-1}e^{-\beta x} I_{(0,\infty)}(x)
 \end{aligned}
 $$
 
-$$\alpha$$ is known as a *shape parameter* and $$\beta$$ is known as an *inverse scale parameter*. The pdf is given in terms of the *gamma function* which is defined, for $$\alpha > 0$$ as
+$$\alpha$$ is known as a *shape parameter* and $$\beta$$ is known as an *inverse scale parameter*.
 
-$$
-\Gamma(\alpha) = \int_0^{\infty} x^{\alpha -1} e^{-x}dx
-$$
+Gamma function:
+
+The pdf is given in terms of the *gamma function* which is defined, for $$\alpha > 0$$ as $$\Gamma(\alpha) = \int_0^{\infty} x^{\alpha -1} e^{-x}dx$$.
 
 Properties of Gamma function:
 - For $$\alpha >1$$, $$\Gamma(\alpha) = (\alpha-1)\Gamma(\alpha-1)$$
@@ -305,17 +323,32 @@ Properties of Gamma function:
 
 ## Inverse-gamma distribution
 
+Notation: $$X \sim \mathrm{Inv}\Gamma(\alpha, \beta)$$
+
 $$
-{\displaystyle f(x;\alpha ,\beta )={\frac {\beta ^{\alpha }}{\Gamma (\alpha )}}(1/x)^{\alpha +1}\exp \left(-\beta /x\right)} \text{ , for } x > 0
+{\displaystyle f(x;\alpha ,\beta )={\frac {\beta ^{\alpha }}{\Gamma (\alpha )}}(\frac{1}{x})^{\alpha +1}e^{\left(-\beta \frac{1}{x}\right)}} \text{ , for } x > 0
 $$
 
 ## Beta distribution
 
-Notation: $$B(\alpha, \beta)$$
+Notation: $$Beta(\alpha, \beta)$$
 
 A family of continuous probability distributions defined on the interval $$[ 0 , 1 ]$$ in terms of two positive parameters, denoted by alpha ($$\alpha$$) and beta ($$\beta$$), that appear as exponents of the variable and its complement to $$1$$, respectively, and control the shape of the distribution.
 
+Mean:
+
+$$
+E[X] = \frac{\alpha}{\alpha + \beta}
+$$
+
 PDF:
+
+$$
+\begin{align*}
+f(p;\alpha, \beta) &= \frac{(\alpha + \beta -1)!}{(\alpha -1)!(\beta-1)!} p^{\alpha-1}(1-p)^{\beta-1} \\
+&\propto p^{\alpha-1}(1-p)^{\beta-1}
+\end{align*}
+$$
 
 <figure>
 <img src="https://upload.wikimedia.org/wikipedia/commons/f/f3/Beta_distribution_pdf.svg" alt="PDF of Beta distribution" width="300pt"/>
@@ -330,3 +363,13 @@ CDF:
 </figure>
 
 In Bayesian inference, the beta distribution is the [conjugate prior](#basic-knowledge) probability distribution for the [Bernoulli](#bernoulli-distribution), [binomial](#binomial-distribution), [negative binomial](#negative-binomial-distribution) and [geometric distributions](#geometric-distribution).
+
+## Normal distribution
+
+Notation: $$X \sim \mathcal{N}(\mu, \sigma^2)$$
+
+PDF:
+
+$$
+{\displaystyle f(x)={\frac {1}{\sigma {\sqrt {2\pi }}}}e^{-{\frac {1}{2}}\left({\frac {x-\mu }{\sigma }}\right)^{2}}}
+$$
