@@ -99,7 +99,7 @@ for all real numbers $$\delta$$ , where $$f$$ is the PDF if the distribution is 
 
 ## Uniform distribution
 
-Notation: $$U[a,b]$$
+Notation: $$X \sim \mathrm{Unif}(a,b)$$
 
 PDF:
 
