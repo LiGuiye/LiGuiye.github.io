@@ -38,6 +38,22 @@ Mainly collected from Wikipedia and class notes of the class STAT 5100 in CU Bou
 
     PDF can be find by differentiating CDF.
 
+    $$
+    f(x) \geq 0 \quad , \quad \int_{-\infty}^{\infty}f(x)dx = 1
+    $$
+
+    Continuous:
+
+    $$
+    E[X] = \int_{-\infty}^{\infty}x \cdot f(x)dx
+    $$
+
+    Discrete:
+
+    $$
+    E[X] = \sum_x x \cdot \underbrace{P(X=x)}_\text{f(x)}
+    $$
+
 3. Law of total probability
 
    $$
@@ -84,6 +100,11 @@ Mainly collected from Wikipedia and class notes of the class STAT 5100 in CU Bou
    - A Sum of Binomials is Binomial
    - A Sum of Poissons is Poisson
    - A Sum of Geometrics is Negative Binomial
+
+8. Things to know about $$e^x$$
+
+   - Lim: $$\lim_{n\rightarrow\infty}(1+\frac{x}{n})^n = e^x$$
+   - Taylor Series Expansion: $$e^x = \sum_{n=0}^\infty \frac{x^n}{n!} = 1 + x + \frac{x^2}{2!} + \frac{x^3}{3!} + \ldots$$
 
 # Common distributions
 
@@ -259,33 +280,72 @@ P (X = x)
 \end{aligned}
 $$
 
+Expectation:
+
+$$
+\begin{aligned}
+E[X] &= \sum_x x \cdot P(X=x) \\
+&= \sum_{x=0}^{\infty} x \cdot \frac{e^{-\lambda}\lambda^{x}}{x!}\\
+&= \sum_{x=1}^{\infty} x \cdot \frac{e^{-\lambda}\lambda^{x}}{x!}\\
+&= \sum_{x=1}^{\infty} \frac{e^{-\lambda}\lambda^{x}}{(x-1)!}\\
+&= e^{-\lambda} \sum_{x=1}^{\infty} \frac{\lambda^{x}}{(x-1)!}\\
+&= \lambda e^{-\lambda} \sum_{x=1}^{\infty} \frac{\lambda^{x-1}}{(x-1)!}\\
+&= \lambda e^{-\lambda} \sum_{x=0}^{\infty} \frac{\lambda^{x}}{(x)!}\\
+&= \lambda e^{-\lambda} e^{\lambda}\\
+&= \lambda
+\end{aligned}
+$$
+
 ## Exponential distribution
 
-Notation: $$exp(\lambda)$$ or $$rate=\lambda$$
+Notation: $$X \sim exp(\lambda)$$
 
 Let $$\lambda > 0$$ be a fixed parameter and consider the continuous random variable with PDF
 
 $$
 \begin{aligned}
-P (X = x)
+f(x)
 &= {\begin{cases}
-\lambda e^{-\lambda x} &, \quad x > 0\\
-0  &, \quad \text{otherwise}
+\lambda e^{-\lambda x} &, \quad x \geq 0\\
+0  &, \quad x < 0
 \end{cases}} \\
-&= \lambda e^{-\lambda x} I_{(0,\infty)}(x)
+&= \lambda e^{-\lambda x} I_{[0,\infty)}(x)
 \end{aligned}
 $$
+
+Claims:
+
+1. If $$X_1, X_2, \ldots , X_n \stackrel{iid}{\sim} exp(\lambda)$$, $$\sum_{i=1}^{n}X_i \sim \Gamma(n, \lambda)$$
+2. If $$y = min (X_1, \ldots, X_n)$$, $$y \sim exp(n\lambda)$$
+
 
 CDF:
 
 $$
-F (x) = P (X \leq x) = \int_o^x \lambda e^{−\lambda u} du = 1 − e^{−λx}
+F (x) = P (X \leq x) = {\begin{cases} \int_o^x \lambda e^{−\lambda u} du = 1 − e^{−λx} &, \quad x \geq 0 \\ 0  &, \quad x < 0 \end{cases}}
+$$
+
+Expectation:
+
+$$
+\begin{aligned}
+E[X]
+&= \int_{-\infty}^{\infty}x \cdot f(x)dx \\
+&= \int_{-\infty}^0 x \cdot 0 \cdot dx + \int_0^{\infty}x\cdot\lambda e^{-\lambda x}dx \\
+&= \frac{1}{\lambda}
+\end{aligned}
 $$
 
 Tail probability:
 
 $$
-P (X > x) = 1 − P (X \leq x) = 1 − F (x) = e^{−λx}.
+\bar{F} (x) = P (X > x) = 1 − P (X \leq x) = 1 − F (x) = e^{−λx}.
+$$
+
+The exponential distribution is the only continuous distribution with the lack of memory property.
+
+$$
+\bar{F}(x+y) = \bar{F}(x)\cdot\bar{F}(y)
 $$
 
 ## Gamma distribution
@@ -303,10 +363,21 @@ $$
 \begin{aligned}
 f(x)
 &= {\begin{cases}
-\frac{\beta^{\alpha}}{\Gamma(\alpha)}x^{\alpha-1}e^{-\beta x} &, \quad x > 0\\
+\frac{1}{\Gamma(\alpha)}\beta^{\alpha}x^{\alpha-1}e^{-\beta x} &, \quad x > 0\\
 0  &, \quad \text{otherwise}
 \end{cases}} \\
-&= \frac{\beta^{\alpha}}{\Gamma(\alpha)}x^{\alpha-1}e^{-\beta x} I_{(0,\infty)}(x)
+&= \frac{1}{\Gamma(\alpha)}\beta^{\alpha}x^{\alpha-1}e^{-\beta x} I_{(0,\infty)}(x)
+\end{aligned}
+$$
+
+Note that
+
+$$
+\begin{aligned}
+\int_0^{\infty} \beta^{\alpha}x^{\alpha-1}e^{-\beta x}dx
+&= \int_0^{\infty}(\beta x)^{\alpha-1}e^{-\beta x}\beta dx &, \quad \text{Let } u = \beta x, u : 0 \rightarrow \infty \\
+&= \int_0^{\infty}u^{\alpha-1}e^{-u}du \\
+&= \Gamma(\alpha)
 \end{aligned}
 $$
 
@@ -314,12 +385,12 @@ $$\alpha$$ is known as a *shape parameter* and $$\beta$$ is known as an *inverse
 
 Gamma function:
 
-The pdf is given in terms of the *gamma function* which is defined, for $$\alpha > 0$$ as $$\Gamma(\alpha) = \int_0^{\infty} x^{\alpha -1} e^{-x}dx$$.
+The pdf is given in terms of the *gamma function* which is defined, for $$\alpha > 0$$ as $$\Gamma(\alpha) := \int_0^{\infty} x^{\alpha -1} e^{-x}dx$$. ($$:=$$ is "defined as")
 
 Properties of Gamma function:
 - For $$\alpha >1$$, $$\Gamma(\alpha) = (\alpha-1)\Gamma(\alpha-1)$$
 - If $$n\geq 1$$ is an integer, $$\Gamma(n) = (n-1)!$$
-- (Since $$0!=1$$), $$\Gamma(1)=1$$
+- $$\Gamma(1)=1$$ since $$0!=1$$ or $$\Gamma(1) = \int_0^{\infty} x^{1 -1} e^{-x}dx = \int_0^{\infty} e^{-x}dx = 1$$
 
 ## Inverse-gamma distribution
 
